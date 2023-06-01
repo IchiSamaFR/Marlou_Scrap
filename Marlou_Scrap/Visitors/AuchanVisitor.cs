@@ -1,5 +1,5 @@
 ﻿using HtmlAgilityPack;
-using MarlouScrap.WebTools;
+using MarlouScrap.Tools;
 using MarlouScrap.Visitors;
 using System;
 using System.Collections.Generic;
@@ -23,9 +23,17 @@ namespace MarlouScrap.Visitors
                 };
             }
         }
-        public const string HTML_BEER_PAGE = @"https://www.auchan.fr/vins-bieres-alcool/bieres-futs-cidres/ca-n071201?page={page}";
+        public const string HTML_BEER_PAGE = @"https://www.auchan.fr/vins-bieres-alcool/bieres-futs-cidres/ca-n071201?page={page}"; // 10
+        public const string HTML_WINE_PAGE = @"https://www.auchan.fr/vins-bieres-alcool/vins/ca-n0709?page={page}"; // 13
+        public const string HTML_APERITIF_PAGE = @"https://www.auchan.fr/vins-bieres-alcool/aperitifs-spiritueux/ca-n0707?page={page}"; // 10
+        public const string HTML_CHAMPAGNE_PAGE = @"https://www.auchan.fr/vins-bieres-alcool/champagnes-vins-effervescents/ca-n0710?page={page}"; // 4
 
-        public class BeerStats
+        public const string PRODUCT_BEER = "Bière / Cidre";
+        public const string PRODUCT_WINE = "Vin";
+        public const string PRODUCT_APERITIF = "Aperitif";
+        public const string PRODUCT_CHAMPAGNE = "Champagne";
+
+        public class ProductStats
         {
             public string Url { get; set; }
             public string Name { get; set; }
@@ -40,10 +48,10 @@ namespace MarlouScrap.Visitors
             {
                 if(Quantity > 1)
                 {
-                    return $"{Brand} {Name}\n{Price.ToString("0.00")}e - {Degree}° - {Quantity}x{Contain}L";
+                    return $"{Brand} {Name}\n{Price.ToString("0.00")}e - {Degree}° - {Quantity}x{Contain}L + {ProductType}";
                 }
 
-                return $"{Brand} {Name}\n{Price.ToString("0.00")}e - {Degree}° - {Contain}L";
+                return $"{Brand} {Name}\n{Price.ToString("0.00")}e - {Degree}° - {Contain}L + {ProductType}";
             }
         }
 
@@ -52,27 +60,70 @@ namespace MarlouScrap.Visitors
         /// </summary>
         /// <param name="pages"></param>
         /// <returns></returns>
-        public List<BeerStats> GetBeers(int pages)
+        public List<ProductStats> GetBeers(int pages = 10)
         {
-            List<BeerStats> beers = new List<BeerStats>();
-            for (int i = 0; i < pages; i++)
-            {
-                beers.AddRange(GetBeers(GetHtml(HTML_BEER_PAGE.Replace("{page}", i.ToString()))));
-            }
-            return beers;
+            var tmp = GetProducts(HTML_BEER_PAGE, pages);
+            tmp.ForEach(p => p.ProductType = PRODUCT_BEER);
+            return tmp;
         }
 
-        protected List<BeerStats> GetBeers(string html)
+        /// <summary>
+        /// Return wines
+        /// </summary>
+        /// <param name="pages"></param>
+        /// <returns></returns>
+        public List<ProductStats> GetWines(int pages = 13)
+        {
+            var tmp = GetProducts(HTML_WINE_PAGE, pages);
+            tmp.ForEach(p => p.ProductType = PRODUCT_WINE);
+            return tmp;
+        }
+
+        /// <summary>
+        /// Return aperitifs and spirits
+        /// </summary>
+        /// <param name="pages"></param>
+        /// <returns></returns>
+        public List<ProductStats> GetAperitifs(int pages = 10)
+        {
+            var tmp = GetProducts(HTML_APERITIF_PAGE, pages);
+            tmp.ForEach(p => p.ProductType = PRODUCT_APERITIF);
+            return tmp;
+        }
+
+        /// <summary>
+        /// Return champagns
+        /// </summary>
+        /// <param name="pages"></param>
+        /// <returns></returns>
+        public List<ProductStats> GetChampagnes(int pages = 4)
+        {
+            var tmp = GetProducts(HTML_CHAMPAGNE_PAGE, pages);
+            tmp.ForEach(p => p.ProductType = PRODUCT_CHAMPAGNE);
+            return tmp;
+        }
+
+
+        public List<ProductStats> GetProducts(string path, int pages)
+        {
+            List<ProductStats> product = new List<ProductStats>();
+            for (int i = 0; i < pages; i++)
+            {
+                product.AddRange(GetScrappedProducts(GetHtml(path.Replace("{page}", i.ToString()))));
+            }
+            return product;
+        }
+        protected List<ProductStats> GetScrappedProducts(string html)
         {
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            var lst = new List<BeerStats>();
+            var lst = new List<ProductStats>();
             var topicList = FindFirstClass(doc.DocumentNode, "list__container");
 
             foreach (HtmlNode? node in FindAttributes(topicList, "class", "list__item"))
             {
-                BeerStats beer = new BeerStats();
+                ProductStats beer = new ProductStats();
                 decimal d;
 
                 var desc = FindFirstClass(node, "product-thumbnail__description");
@@ -83,7 +134,6 @@ namespace MarlouScrap.Visitors
                 }
                 beer.Brand = Clean(brand?.InnerHtml);
                 beer.Name = Clean(FindFirstClass(node, "product-thumbnail__description")?.InnerHtml.Substring(brand?.OuterHtml.Length ?? 0));
-                beer.ProductType = "Bière / Cidre";
 
                 var degreeMatch = Regex.Match(beer.Name, MathTool.ALCOOL_DEGREE).Value;
                 if (decimal.TryParse(degreeMatch.Replace("%", "").Replace(".", ","), out d))

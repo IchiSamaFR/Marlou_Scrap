@@ -1,4 +1,5 @@
-﻿using MarlouScrap.Visitors;
+﻿using MarlouScrap.Tools;
+using MarlouScrap.Visitors;
 using Newtonsoft.Json;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
@@ -10,19 +11,22 @@ namespace MarlouScrap
     {
         public static void Main()
         {
-            StartScrap();
+            StartInfos();
         }
         public static void StartInfos()
         {
-            var lst = LoadJson<BeerStats>("file.json");
+            var lst = LoadJson<ProductStats>("file.json");
 
-            Console.WriteLine(string.Join("\n", lst.Where(b => b.Degree > 0).OrderBy(b => b.Price / (b.Degree * b.Contain * b.Quantity)).Take(10).Select(b => b.Debug())));
+            Console.WriteLine(string.Join("\n", lst.Distinct(new ProductComparer()).Where(b => b.Degree > 0 && !b.Name.ToLower().Contains("crème")).Distinct().OrderBy(b => b.Price / (b.Degree * b.Contain * b.Quantity)).Take(10).Select(b => b.Debug())));
         }
 
         public static void StartScrap()
         {
             var tmp = new AuchanVisitor();
-            var lst = tmp.GetBeers(10);
+            var lst = tmp.GetBeers();
+            lst.AddRange(tmp.GetWines());
+            lst.AddRange(tmp.GetAperitifs());
+            lst.AddRange(tmp.GetChampagnes());
             //Console.WriteLine(string.Join("\n", lst.Select(b => b.Debug())));
 
             SaveJson(lst, "file.json");

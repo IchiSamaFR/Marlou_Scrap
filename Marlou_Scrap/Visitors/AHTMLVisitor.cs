@@ -1,5 +1,5 @@
 ﻿using HtmlAgilityPack;
-using MarlouScrap.WebTools;
+using MarlouScrap.Tools;
 using System.Net;
 using System.Web;
 
