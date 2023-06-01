@@ -1,12 +1,14 @@
 ﻿using HtmlAgilityPack;
 using MarlouScrap.WebTools;
+using System.Net;
 using System.Web;
 
 namespace MarlouScrap.Visitors
 {
     public abstract class AHTMLVisitor
     {
-        public static string GetHtml(string url, bool useProxy = false)
+        public virtual List<Cookie> Cookies { get; } = new List<Cookie>();
+        protected string GetHtml(string url, bool useProxy = false)
         {
             var httpClientHandler = new HttpClientHandler();
 
@@ -14,12 +16,16 @@ namespace MarlouScrap.Visitors
             {
                 httpClientHandler.Proxy = ProxyTool.GetProxy();
             }
-
-            var client = new HttpClient();
+            httpClientHandler.UseCookies = true;
+            foreach (var cookie in Cookies)
+            {
+                httpClientHandler.CookieContainer.Add(cookie);
+            }
+            var client = new HttpClient(httpClientHandler);
             var content = client.GetStringAsync(url).Result;
             return content;
         }
-        protected static string Clean(string value)
+        protected string Clean(string value)
         {
             if (value == null)
             {
@@ -52,7 +58,6 @@ namespace MarlouScrap.Visitors
 
             return lst;
         }
-
         protected static HtmlNode FindFirstClass(HtmlNode node, string nodeClass)
         {
             return FindFirstAttribute(node, "class", nodeClass);

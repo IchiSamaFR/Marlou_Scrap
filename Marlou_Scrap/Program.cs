@@ -1,6 +1,8 @@
-﻿
-
-using Marlou_Scrap.Visitors;
+﻿using MarlouScrap.Visitors;
+using Newtonsoft.Json;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
+using static MarlouScrap.Visitors.AuchanVisitor;
 
 namespace MarlouScrap
 {
@@ -8,13 +10,34 @@ namespace MarlouScrap
     {
         public static void Main()
         {
-            Start();
+            StartScrap();
         }
-        public static void Start()
+        public static void StartInfos()
         {
-            var tmp = new CarrefourVisitor();
-            Console.WriteLine(string.Join("\n", tmp.GetBeers(1).Select(b => b.Brand + " - " + b.Name + " - " + b.Degree)));
+            var lst = LoadJson<BeerStats>("file.json");
+
+            Console.WriteLine(string.Join("\n", lst.Where(b => b.Degree > 0).OrderBy(b => b.Price / (b.Degree * b.Contain * b.Quantity)).Take(10).Select(b => b.Debug())));
         }
+
+        public static void StartScrap()
+        {
+            var tmp = new AuchanVisitor();
+            var lst = tmp.GetBeers(10);
+            //Console.WriteLine(string.Join("\n", lst.Select(b => b.Debug())));
+
+            SaveJson(lst, "file.json");
+        }
+        public static List<T> LoadJson<T>(string path)
+        {
+            var json = File.ReadAllText(path);
+            return JsonConvert.DeserializeObject<List<T>>(json);
+        }
+        private static void SaveJson<T>(List<T> lst, string path)
+        {
+            string json = JsonConvert.SerializeObject(lst, Formatting.Indented);
+            File.WriteAllText(path, json);
+        }
+
         private static void OnProgress(float value)
         {
             int progressSize = 20;
