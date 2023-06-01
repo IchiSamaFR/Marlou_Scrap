@@ -13,7 +13,7 @@ namespace MarlouScrap
         public static void Start()
         {
             var tmp = new CarrefourVisitor();
-            Console.WriteLine(string.Join("\n, ", tmp.GetBeers(1).Select(b => b.Name)));
+            Console.WriteLine(string.Join("\n", tmp.GetBeers(1).Select(b => b.Brand + " - " + b.Name + " - " + b.Degree)));
         }
         private static void OnProgress(float value)
         {

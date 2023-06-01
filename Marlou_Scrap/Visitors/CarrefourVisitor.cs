@@ -1,9 +1,11 @@
 ﻿using HtmlAgilityPack;
+using Marlou_Scrap.WebTools;
 using MarlouScrap.Visitors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Marlou_Scrap.Visitors
@@ -15,8 +17,10 @@ namespace Marlou_Scrap.Visitors
         {
             public string Url { get; set; }
             public string Name { get; set; }
+            public string Brand { get; set; }
             public string Product { get; set; }
-            public string TopicDate { get; set; }
+            public decimal Degree { get; set; }
+            public decimal Price { get; set; }
         }
 
         /// <summary>
@@ -45,7 +49,18 @@ namespace Marlou_Scrap.Visitors
             foreach (HtmlNode? node in FindAttributes(topicList, "class", "list__item"))
             {
                 BeerStats beer = new BeerStats();
-                beer.Name = Clean(FindFirstClass(node, "product-thumbnail__description")?.OuterHtml);
+
+                var desc = FindFirstClass(node, "product-thumbnail__description");
+                var brand = FindFirstAttribute(desc, "itemprop", "brand");
+                if(brand == null)
+                {
+                    continue;
+                }
+                beer.Brand = Clean(brand?.InnerHtml);
+                beer.Name = Clean(FindFirstClass(node, "product-thumbnail__description")?.InnerHtml.Substring(brand?.OuterHtml.Length ?? 0));
+
+                var degree = Regex.Match(beer.Name, MathTool.ALCOOL_DEGREE);
+                beer.Degree = decimal.Parse(Regex.Match(beer.Name, MathTool.ALCOOL_DEGREE).Value.Replace("%", ""));
                 beer.Product = "Bière / Cidre";
                 lst.Add(beer);
             }
