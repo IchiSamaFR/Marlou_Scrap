@@ -1,17 +1,11 @@
-﻿using MarlouScrap.Visitors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static MarlouScrap.Visitors.AuchanVisitor;
+﻿using MarlouScrap.Models.Marlou;
 
 namespace MarlouScrap.Tools
 {
-    public class ProductComparer : IEqualityComparer<ProductStats>
+    public class AlcoolComparer : IEqualityComparer<AlcoolStats>
     {
         // Products are equal if their names and product numbers are equal.
-        public bool Equals(ProductStats x, ProductStats y)
+        public bool Equals(AlcoolStats x, AlcoolStats y)
         {
             return x.Name == y.Name && x.Brand == y.Brand;
         }
@@ -19,7 +13,7 @@ namespace MarlouScrap.Tools
         // If Equals() returns true for a pair of objects
         // then GetHashCode() must return the same value for these objects.
 
-        public int GetHashCode(ProductStats product)
+        public int GetHashCode(AlcoolStats product)
         {
             //Check whether the object is null
             if (Object.ReferenceEquals(product, null)) return 0;

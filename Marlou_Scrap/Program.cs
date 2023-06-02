@@ -1,9 +1,7 @@
-﻿using MarlouScrap.Tools;
+﻿using MarlouScrap.Models.Marlou;
+using MarlouScrap.Tools;
 using MarlouScrap.Visitors;
 using Newtonsoft.Json;
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
-using static MarlouScrap.Visitors.AuchanVisitor;
 
 namespace MarlouScrap
 {
@@ -15,9 +13,9 @@ namespace MarlouScrap
         }
         public static void StartInfos()
         {
-            var lst = LoadJson<ProductStats>("file.json");
+            var lst = LoadJson<AlcoolStats>("file.json");
 
-            Console.WriteLine(string.Join("\n", lst.Distinct(new ProductComparer()).Where(b => b.Degree > 0 && !b.Name.ToLower().Contains("crème")).Distinct().OrderBy(b => b.Price / (b.Degree * b.Contain * b.Quantity)).Take(10).Select(b => b.Debug())));
+            Console.WriteLine(string.Join("\n", lst.Distinct(new AlcoolComparer()).Where(b => b.Degree > 0 && !b.Name.ToLower().Contains("crème")).Distinct().OrderBy(b => b.Price / (b.Degree * b.Contain * b.Quantity)).Take(10).Select(b => b.Debug())));
         }
 
         public static void StartScrap()

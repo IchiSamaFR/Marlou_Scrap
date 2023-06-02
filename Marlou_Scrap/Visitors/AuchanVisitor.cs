@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using MarlouScrap.Models.Marlou;
 using MarlouScrap.Tools;
 using MarlouScrap.Visitors;
 using System;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MarlouScrap.Visitors
 {
-    public class AuchanVisitor : AHTMLVisitor
+    public class AuchanVisitor : AHTMLVisitor, IMarlouVisitor
     {
         public override List<Cookie> Cookies
         {
@@ -33,70 +34,28 @@ namespace MarlouScrap.Visitors
         public const string PRODUCT_APERITIF = "Aperitif";
         public const string PRODUCT_CHAMPAGNE = "Champagne";
 
-        public class ProductStats
-        {
-            public string Url { get; set; }
-            public string Name { get; set; }
-            public string Brand { get; set; }
-            public string ProductType { get; set; }
-            public decimal Degree { get; set; }
-            public int Quantity { get; set; }
-            public decimal Contain { get; set; }
-            public decimal Price { get; set; }
-
-            public string Debug()
-            {
-                if(Quantity > 1)
-                {
-                    return $"{Brand} {Name}\n{Price.ToString("0.00")}e - {Degree}° - {Quantity}x{Contain}L + {ProductType}";
-                }
-
-                return $"{Brand} {Name}\n{Price.ToString("0.00")}e - {Degree}° - {Contain}L + {ProductType}";
-            }
-        }
-
-        /// <summary>
-        /// Return all beers / cidres
-        /// </summary>
-        /// <param name="pages"></param>
-        /// <returns></returns>
-        public List<ProductStats> GetBeers(int pages = 10)
+        public List<AlcoolStats> GetBeers(int pages = 10)
         {
             var tmp = GetProducts(HTML_BEER_PAGE, pages);
             tmp.ForEach(p => p.ProductType = PRODUCT_BEER);
             return tmp;
         }
 
-        /// <summary>
-        /// Return wines
-        /// </summary>
-        /// <param name="pages"></param>
-        /// <returns></returns>
-        public List<ProductStats> GetWines(int pages = 13)
+        public List<AlcoolStats> GetWines(int pages = 13)
         {
             var tmp = GetProducts(HTML_WINE_PAGE, pages);
             tmp.ForEach(p => p.ProductType = PRODUCT_WINE);
             return tmp;
         }
 
-        /// <summary>
-        /// Return aperitifs and spirits
-        /// </summary>
-        /// <param name="pages"></param>
-        /// <returns></returns>
-        public List<ProductStats> GetAperitifs(int pages = 10)
+        public List<AlcoolStats> GetAperitifs(int pages = 10)
         {
             var tmp = GetProducts(HTML_APERITIF_PAGE, pages);
             tmp.ForEach(p => p.ProductType = PRODUCT_APERITIF);
             return tmp;
         }
 
-        /// <summary>
-        /// Return champagns
-        /// </summary>
-        /// <param name="pages"></param>
-        /// <returns></returns>
-        public List<ProductStats> GetChampagnes(int pages = 4)
+        public List<AlcoolStats> GetChampagnes(int pages = 4)
         {
             var tmp = GetProducts(HTML_CHAMPAGNE_PAGE, pages);
             tmp.ForEach(p => p.ProductType = PRODUCT_CHAMPAGNE);
@@ -104,26 +63,26 @@ namespace MarlouScrap.Visitors
         }
 
 
-        public List<ProductStats> GetProducts(string path, int pages)
+        protected List<AlcoolStats> GetProducts(string path, int pages)
         {
-            List<ProductStats> product = new List<ProductStats>();
+            List<AlcoolStats> product = new List<AlcoolStats>();
             for (int i = 0; i < pages; i++)
             {
                 product.AddRange(GetScrappedProducts(GetHtml(path.Replace("{page}", i.ToString()))));
             }
             return product;
         }
-        protected List<ProductStats> GetScrappedProducts(string html)
+        protected List<AlcoolStats> GetScrappedProducts(string html)
         {
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            var lst = new List<ProductStats>();
+            var lst = new List<AlcoolStats>();
             var topicList = FindFirstClass(doc.DocumentNode, "list__container");
 
             foreach (HtmlNode? node in FindAttributes(topicList, "class", "list__item"))
             {
-                ProductStats beer = new ProductStats();
+                AlcoolStats beer = new AlcoolStats();
                 decimal d;
 
                 var desc = FindFirstClass(node, "product-thumbnail__description");
