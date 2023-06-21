@@ -15,7 +15,7 @@ namespace MarlouScrap
         {
             var lst = LoadJson<AlcoolStats>("file.json");
 
-            Console.WriteLine(string.Join("\n", lst.Distinct(new AlcoolComparer()).Where(b => b.Degree > 0 && !b.Name.ToLower().Contains("crème")).Distinct().OrderBy(b => b.Price / (b.Degree * b.Contain * b.Quantity)).Take(10).Select(b => b.Debug())));
+            //Console.WriteLine(string.Join("\n", lst.Distinct(new AlcoolComparer()).Where(b => b.Degree > 0 && !b.Name.ToLower().Contains("crème")).Distinct().OrderBy(b => b.Price / (b.Degree * b.Contain * b.Quantity)).Take(10).Select(b => b.Debug())));
         }
 
         public static void StartScrap()

@@ -29,36 +29,31 @@ namespace MarlouScrap.Visitors
         public const string HTML_APERITIF_PAGE = @"https://www.auchan.fr/vins-bieres-alcool/aperitifs-spiritueux/ca-n0707?page={page}"; // 10
         public const string HTML_CHAMPAGNE_PAGE = @"https://www.auchan.fr/vins-bieres-alcool/champagnes-vins-effervescents/ca-n0710?page={page}"; // 4
 
-        public const string PRODUCT_BEER = "Bière / Cidre";
-        public const string PRODUCT_WINE = "Vin";
-        public const string PRODUCT_APERITIF = "Aperitif";
-        public const string PRODUCT_CHAMPAGNE = "Champagne";
-
         public List<AlcoolStats> GetBeers(int pages = 10)
         {
             var tmp = GetProducts(HTML_BEER_PAGE, pages);
-            tmp.ForEach(p => p.ProductType = PRODUCT_BEER);
+            tmp.ForEach(p => p.ProductType = Constant.PRODUCT_BEER);
             return tmp;
         }
 
         public List<AlcoolStats> GetWines(int pages = 13)
         {
             var tmp = GetProducts(HTML_WINE_PAGE, pages);
-            tmp.ForEach(p => p.ProductType = PRODUCT_WINE);
+            tmp.ForEach(p => p.ProductType = Constant.PRODUCT_WINE);
             return tmp;
         }
 
         public List<AlcoolStats> GetAperitifs(int pages = 10)
         {
             var tmp = GetProducts(HTML_APERITIF_PAGE, pages);
-            tmp.ForEach(p => p.ProductType = PRODUCT_APERITIF);
+            tmp.ForEach(p => p.ProductType = Constant.PRODUCT_APERITIF);
             return tmp;
         }
 
         public List<AlcoolStats> GetChampagnes(int pages = 4)
         {
             var tmp = GetProducts(HTML_CHAMPAGNE_PAGE, pages);
-            tmp.ForEach(p => p.ProductType = PRODUCT_CHAMPAGNE);
+            tmp.ForEach(p => p.ProductType = Constant.PRODUCT_CHAMPAGNE);
             return tmp;
         }
 
