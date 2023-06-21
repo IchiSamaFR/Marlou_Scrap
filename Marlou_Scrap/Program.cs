@@ -1,52 +1,29 @@
-﻿using MarlouScrap.Models.Marlou;
-using MarlouScrap.Tools;
-using MarlouScrap.Visitors;
-using Newtonsoft.Json;
+﻿// See https://aka.ms/new-console-template for more information
+using Fizzler.Systems.HtmlAgilityPack;
+using HtmlAgilityPack;
+using MarlouScrapper;
+using MarlouScrapper.Contexts;
+using MarlouScrapper.Engines;
+using MarlouScrapper.Extensions;
+using System.Text;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
-namespace MarlouScrap
-{
-    public partial class Program
-    {
-        public static void Main()
-        {
-            StartInfos();
-        }
-        public static void StartInfos()
-        {
-            var lst = LoadJson<AlcoolStats>("file.json");
+string xmlFilename = Path.GetFullPath("config.xml");
+Console.WriteLine(xmlFilename);
+var context = Context.LoadFromXML(xmlFilename);
+var scrapper = Scrapper.Build(context);
 
-            //Console.WriteLine(string.Join("\n", lst.Distinct(new AlcoolComparer()).Where(b => b.Degree > 0 && !b.Name.ToLower().Contains("crème")).Distinct().OrderBy(b => b.Price / (b.Degree * b.Contain * b.Quantity)).Take(10).Select(b => b.Debug())));
-        }
+//scrapper.Action(context.Scrappers[0]);
+var doc = new HtmlDocument();
+doc.LoadHtml(File.ReadAllText("content.txt"));
+Console.WriteLine(scrapper.HTML.AnalyseNode(doc.DocumentNode, context.Scrappers[0].List[0].Select));
+context.Scrappers[0].List[0].Web.LocalContext = new Context(new Dictionary<string, string>() { { "page", "1" } });
+Console.WriteLine(scrapper.Action(context.Scrappers[0]));
+//var response = scrapper.HTML.Send(context.Scrappers[0].List[0].Web);
+//Console.WriteLine(response.Content.Text());
+var e = EngineFactory.GetEngine("json");
+var content = @"{  ""Date"": ""2019-08-01T00:00:00"",  ""Temperature"": 25,  ""Summary"": ""Hot"",  ""DatesAvailable"": [    ""2019-08-01T00:00:00"",    ""2019-08-02T00:00:00""  ],  ""TemperatureRanges"": {      ""Cold"": {          ""High"": 20,          ""Low"": -10      },      ""Hot"": {          ""High"": 60,          ""Low"": 20      }  }}";
+Console.WriteLine(e.XPath(content, "TemperatureRanges.Cold.High"));
 
-        public static void StartScrap()
-        {
-            var tmp = new AuchanVisitor();
-            var lst = tmp.GetBeers();
-            lst.AddRange(tmp.GetWines());
-            lst.AddRange(tmp.GetAperitifs());
-            lst.AddRange(tmp.GetChampagnes());
-            //Console.WriteLine(string.Join("\n", lst.Select(b => b.Debug())));
-
-            SaveJson(lst, "file.json");
-        }
-        public static List<T> LoadJson<T>(string path)
-        {
-            var json = File.ReadAllText(path);
-            return JsonConvert.DeserializeObject<List<T>>(json);
-        }
-        private static void SaveJson<T>(List<T> lst, string path)
-        {
-            string json = JsonConvert.SerializeObject(lst, Formatting.Indented);
-            File.WriteAllText(path, json);
-        }
-
-        private static void OnProgress(float value)
-        {
-            int progressSize = 20;
-            int progress = (int)MathF.Round(value * progressSize);
-            Console.SetCursorPosition(0, 0);
-            Console.Write("[" + new string('#', progress) + new string('.', progressSize - progress) + "]");
-            Console.Write((value * 100).ToString("0") + "%");
-        }
-    }
-}

@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+	<!-- des properties sont à la disposition de l'utilisateur pour avoir un dynamisme sur la config
+	exemple 
+	<property name="proxyport">8080</property>
+	<proxy url="http://my.free.proxy.com:{proxyport}"/>
+	-->
+	<property name="test">pouet</property>
+	<!-- declaration des proxy
+	     un proxy au hasard sera utilisé parmis cette liste
+		 pour NE PAS utiliser de proxy, supprimez tous les noeuds <proxy/>
+		<proxy url="http://127.0.0.1:8080"/>
+		<proxy url="http://my.free.proxy.com:8080"/>
+	-->
+	<scrapper name="Auchan">
+    <init method="get" url="https://www.auchan.fr/journey">
+      <header name="X-Requested-With">XMLHttpRequest</header>
+      <header name="Accept">application/json</header>
+      <header name="Host">www.auchan.fr</header>
+      <param engine="json" xpath="id" to="journeyid"/>
+    </init>
+    <init method="post" url="https://www.auchan.fr/journey/update" stripspaces="true" payload="form">
+      <header name="X-Requested-With">XMLHttpRequest</header>
+      <header name="Accept">application/json</header>
+      <header name="Host">www.auchan.fr</header>
+      <![CDATA[
+			offeringContext.seller.id=18398e21-5648-43d4-80dc-21502df9ca3e
+			&offeringContext.channels%5B0%5D=SHIPPING
+			&offeringContext.address.zipcode=13300
+			&offeringContext.address.city=Salon-de-Provence
+			&offeringContext.address.country=France
+			&offeringContext.location.longitude=5.098022498963218
+			&offeringContext.location.latitude=43.640523670782386
+			&offeringContext.accuracy=MUNICIPALITY
+			&offeringContext.express=false
+			&address.zipcode=13300
+			&address.city=Salon-de-Provence
+			&address.country=France
+			&location.latitude=43.640523670782386
+			&location.longitude=5.098022498963218
+			&accuracy=MUNICIPALITY
+			&position=1
+			&journeyId={journeyid}
+		]]>
+    </init>
+		<list loop="page:1:1">
+			<web method="get" url="https://www.auchan.fr/vins-bieres-alcool/bieres-futs-cidres/ca-n071201?page={page}"/>
+			<select query=".list__container .list__item" to="bieres">
+				<select query=".product-thumbnail__description" single="true">
+					<text regex="(.*) (?=[0-9]+(?>[,\.][0-9]+)?%)" regexgroup="1" trim="true" htmldecode="true" to="name"/>
+					<text regex="([0-9]+(?>[,\.][0-9]+)?%)" regexgroup="1" trim="true" htmldecode="true" to="degree">
+						<replace pattern="%" by=""/>
+						<replace pattern="\." by=","/>
+					</text>
+					<select query="strong[itemprop=&quot;brand&quot;]" single="true">
+						<text to="brand" trim="true" htmldecode="true"/>
+					</select>
+				</select>
+				<select query=".product-price" single="true">
+					<text trim="true" htmldecode="true" to="price">
+						<replace pattern="\." by=","/>
+						<replace pattern="€" by=""/>
+					</text>
+				</select>
+				<select query=".product-thumbnail__attributes .product-attribute" single="true">
+					<text regex="([0-9]+)x" regexgroup="1" trim="true" htmldecode="true" to="quantite" empty="1"/>
+					<text regex="([0-9]+)c?cl" regexgroup="1" trim="true" htmldecode="true" to="volume"/>
+				</select>
+			</select>
+		</list>
+	</scrapper>
+</root>
