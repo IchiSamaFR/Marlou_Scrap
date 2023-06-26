@@ -14,6 +14,7 @@ namespace MarlouScrapper.Contexts
         private readonly XDocument _xDocument;
         private readonly XElement _root;
         private Dictionary<string, string>? _properties = null;
+        private List<string>? _cookies = null;
         private List<string>? _proxies = null;
         private List<ContextScrapper>? _scrappers = null;
 

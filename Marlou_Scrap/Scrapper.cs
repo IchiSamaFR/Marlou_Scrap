@@ -35,13 +35,9 @@ namespace MarlouScrapper
                 if (response.IsSuccessStatusCode)
                 {
                     var content = response.Content.Text();
-                    foreach (var param in init.Params)
-                    {
-                        localContext.AddProperty(param.To, param.Engine.XPath(content, param.XPath));
-                    }
                 }
             }
-            foreach (var list in contextScrapper.List)
+            foreach (var list in contextScrapper.Pages)
             {
                 list.Web.LocalContext = localContext;
                 if (list.LoopName != null)

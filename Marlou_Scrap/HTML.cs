@@ -16,14 +16,23 @@ namespace MarlouScrapper
     internal class HTML
     {
         private HttpClient _client;
+        private HttpClientHandler _handler;
 
-        public HTML(WebProxy? webProxy)
+        public HTML(WebProxy? webProxy, List<Cookie> cookies)
         {
-            _client = new HttpClient(new HttpClientHandler
+            _handler = new HttpClientHandler
             {
                 Proxy = webProxy,
                 UseCookies = true
-            });
+            };
+        }
+        private void Build()
+        {
+            foreach (var cookie in cookies)
+            {
+                handler.CookieContainer.Add(cookie);
+            }
+            _client = new HttpClient(handler);
         }
 
         public static HTML Build(Context context)
